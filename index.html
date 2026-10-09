@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual para crear tu agente de IA — Tutorial interactivo</title>
+<style>
+/* ============ BASE ============ */
+*{box-sizing:border-box;}
+:root{
+  --bg:#0a0e1a;
+  --card:#0f172a;
+  --accent:#1e3a5f;
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --border:#1e293b;
+  --hl:#38bdf8;
+  --hl2:#818cf8;
+  --ok:#34d399;
+  --warn:#fbbf24;
+  --bad:#f87171;
+  --code-bg:#060a14;
+  --radius:14px;
+  --fs:16px;
+  --toolbar-bg:rgba(10,14,26,.92);
+}
+body.light{
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --accent:#dbeafe;
+  --text:#0f172a;
+  --muted:#475569;
+  --border:#cbd5e1;
+  --hl:#0369a1;
+  --hl2:#4338ca;
+  --ok:#047857;
+  --warn:#b45309;
+  --bad:#b91c1c;
+  --code-bg:#f8fafc;
+  --toolbar-bg:rgba(241,245,249,.94);
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:var(--fs);
+  line-height:1.65;
+  transition:background .25s ease,color .25s ease;
+}
+img{max-width:100%;}
+a{color:var(--hl);}
+
+/* ============ BARRA DE PROGRESO ============ */
+.progress-bar{
+  position:fixed;top:0;left:0;height:3px;width:0%;
+  background:linear-gradient(90deg,var(--hl),var(--hl2));
+  z-index:200;transition:width .08s linear;
+}
+
+/* ============ CABECERA FIJA ============ */
+.appbar{
+  position:sticky;top:0;z-index:100;
+  background:var(--toolbar-bg);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.toolbar{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:8px 12px;max-width:1100px;margin:0 auto;
+}
+.brand{
+  font-weight:800;font-size:.9rem;letter-spacing:.03em;
+  background:linear-gradient(90deg,var(--hl),var(--hl2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  margin-right:auto;white-space:nowrap;
+}
+.btn{
+  background:var(--card);color:var(--text);
+  border:1px solid var(--border);border-radius:10px;
+  padding:6px 10px;font-size:.8rem;font-weight:600;
+  cursor:pointer;font-family:inherit;line-height:1.2;
+  transition:border-color .15s,transform .1s,background .15s;
+}
+.btn:hover{border-color:var(--hl);}
+.btn:active{transform:scale(.96);}
+.btn.icon{padding:6px 9px;}
+.searchwrap{position:relative;display:flex;align-items:center;}
+.searchwrap input{
+  background:var(--card);border:1px solid var(--border);color:var(--text);
+  border-radius:10px;padding:6px 10px;font-size:.8rem;width:170px;font-family:inherit;
+}
+.searchwrap input:focus{outline:none;border-color:var(--hl);}
+.searchcount{font-size:.72rem;color:var(--muted);margin-left:6px;white-space:nowrap;}
+
+/* ============ PESTAÑAS ============ */
+.tabs{
+  display:flex;gap:6px;overflow-x:auto;padding:0 12px 8px;
+  max-width:1100px;margin:0 auto;
+  scrollbar-width:thin;
+}
+.tabs::-webkit-scrollbar{height:5px;}
+.tabs::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.tab{
+  flex:0 0 auto;
+  background:transparent;color:var(--muted);
+  border:1px solid var(--border);border-radius:999px;
+  padding:6px 14px;font-size:.78rem;font-weight:700;letter-spacing:.04em;
+  cursor:pointer;font-family:inherit;white-space:nowrap;
+  transition:all .18s ease;
+}
+.tab:hover{color:var(--text);border-color:var(--hl);}
+.tab.active{
+  background:linear-gradient(90deg,var(--accent),#123055);
+  color:#fff;border-color:var(--hl);
+  box-shadow:0 0 0 1px var(--hl) inset,0 4px 18px -8px var(--hl);
+}
+body.light .tab.active{background:linear-gradient(90deg,#1e3a5f,#2b5288);color:#fff;}
+
+/* ============ CONTENIDO ============ */
+main{max-width:980px;margin:0 auto;padding:18px 12px 100px;}
+.panel{display:none;}
+.panel.active{display:block;animation:fade .28s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+h1{font-size:1.7rem;line-height:1.25;margin:.2em 0 .35em;letter-spacing:-.02em;}
+h2{font-size:1.28rem;margin:1.6em 0 .5em;letter-spacing:-.01em;
+   border-left:4px solid var(--hl);padding-left:.55em;}
+h3{font-size:1.06rem;margin:1.3em 0 .4em;color:var(--hl);}
+h4{font-size:.98rem;margin:1.1em 0 .35em;}
+p{margin:.65em 0;}
+ul,ol{margin:.6em 0;padding-left:1.35em;}
+li{margin:.3em 0;}
+strong{color:var(--text);font-weight:700;}
+em{color:var(--hl);font-style:normal;font-weight:600;}
+
+.lead{font-size:1.02rem;color:var(--muted);margin-bottom:1.2em;}
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px 16px 14px;margin:14px 0;
+}
+.card.hl{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+.grid2{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:720px){.grid2{grid-template-columns:1fr 1fr;}}
+
+/* ============ SVG HERO ============ */
+.hero-svg-mount{
+  width:100%;margin:6px 0 14px;border-radius:16px;overflow:hidden;
+  border:1px solid var(--accent);
+}
+.hero-svg-mount svg{display:block;width:100%;height:auto;}
+.hero-svg-mount img{display:block;width:100%;height:auto;}
+.hero-caption{
+  font-size:.82rem;color:var(--muted);text-align:center;
+  margin:-6px 0 18px;font-style:italic;
+}
+
+/* ============ PROMPTS Y COPIAR ============ */
+.prompt,.copyblock,.urlbox{
+  background:var(--code-bg);border:1px solid var(--border);
+  border-radius:12px;margin:12px 0;overflow:hidden;
+}
+.prompt-head{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-bottom:1px solid var(--border);
+  background:linear-gradient(90deg,rgba(30,58,95,.5),transparent);
+}
+.badge{
+  font-size:.68rem;font-weight:800;letter-spacing:.08em;
+  background:var(--accent);color:#dbeafe;
+  padding:3px 9px;border-radius:999px;
+}
+.badge.ok{background:#064e3b;color:#a7f3d0;}
+.badge.warn{background:#78350f;color:#fde68a;}
+.badge.bad{background:#7f1d1d;color:#fecaca;}
+.copyBtn{
+  margin-left:auto;
+  background:var(--accent);color:#dbeafe;
+  border:1px solid var(--hl);border-radius:8px;
+  padding:4px 10px;font-size:.7rem;font-weight:800;letter-spacing:.06em;
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.copyBtn:hover{background:var(--hl);color:#04121f;}
+.copyBtn.copied{background:var(--ok);border-color:var(--ok);color:#04231a;}
+.prompt pre,.copyblock pre,.urlbox pre{
+  margin:0;padding:12px 14px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.82rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;
+  color:var(--text);overflow-x:auto;
+}
+.prompt .why{
+  font-size:.8rem;color:var(--muted);padding:8px 14px;
+  border-top:1px dashed var(--border);
+}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.86em;background:var(--code-bg);
+  border:1px solid var(--border);border-radius:5px;padding:1px 5px;
+  color:var(--hl);
+}
+
+/* ============ TABLAS ============ */
+.tablewrap{overflow-x:auto;margin:14px 0;-webkit-overflow-scrolling:touch;}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.87rem;}
+th,td{border:1px solid var(--border);padding:9px 11px;text-align:left;vertical-align:top;}
+th{background:var(--accent);color:#dbeafe;font-weight:700;font-size:.8rem;letter-spacing:.03em;}
+tr:nth-child(even) td{background:rgba(30,58,95,.16);}
+body.light tr:nth-child(even) td{background:#f8fafc;}
+
+/* ============ DETALLES / FAQ ============ */
+details{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;margin:10px 0;overflow:hidden;
+}
+details summary{
+  cursor:pointer;padding:12px 14px;font-weight:700;font-size:.92rem;
+  list-style:none;display:flex;align-items:center;gap:9px;
+}
+details summary::-webkit-details-marker{display:none;}
+details summary::before{
+  content:"+";display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;flex:0 0 20px;border-radius:6px;
+  background:var(--accent);color:var(--hl);font-weight:900;font-size:.9rem;
+}
+details[open] summary::before{content:"−";}
+details .dbody{padding:0 14px 14px;border-top:1px solid var(--border);font-size:.9rem;}
+
+/* ============ CHECKLIST ============ */
+.checklist{list-style:none;padding:0;margin:12px 0;}
+.checklist li{margin:0;}
+.checklist label{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 11px;border:1px solid var(--border);border-radius:10px;
+  margin:6px 0;cursor:pointer;font-size:.9rem;transition:border-color .15s,background .15s;
+}
+.checklist label:hover{border-color:var(--hl);}
+.checklist input{
+  appearance:none;-webkit-appearance:none;
+  width:19px;height:19px;flex:0 0 19px;margin-top:2px;
+  border:2px solid var(--accent);border-radius:5px;
+  background:transparent;cursor:pointer;position:relative;transition:all .15s;
+}
+.checklist input:checked{background:var(--hl);border-color:var(--hl);}
+.checklist input:checked::after{
+  content:"";position:absolute;left:5px;top:1px;
+  width:5px;height:10px;border:solid #04121f;border-width:0 2px 2px 0;
+  transform:rotate(45deg);
+}
+.checklist input:checked + span{text-decoration:line-through;color:var(--muted);}
+.checkprogress{
+  font-size:.82rem;color:var(--muted);margin-top:8px;
+  display:flex;align-items:center;gap:10px;
+}
+.cbar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.cbar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--hl),var(--hl2));transition:width .3s;}
+
+/* ============ DESTACADOS ============ */
+.note{
+  border-left:4px solid var(--hl);background:var(--card);
+  padding:12px 14px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.9rem;
+}
+.note.ok{border-color:var(--ok);}
+.note.warn{border-color:var(--warn);}
+.note.bad{border-color:var(--bad);}
+.note b{display:block;margin-bottom:3px;}
+
+.callout{
+  background:linear-gradient(135deg,rgba(30,58,95,.55),rgba(15,23,42,.2));
+  border:1px solid var(--accent);border-radius:var(--radius);
+  padding:14px 16px;margin:16px 0;
+}
+.callout p:first-child{margin-top:0;}
+.callout p:last-child{margin-bottom:0;}
+
+pre.tree{
+  background:var(--code-bg);border:1px solid var(--border);border-radius:12px;
+  padding:14px;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:.8rem;line-height:1.55;overflow-x:auto;white-space:pre;
+  color:var(--text);margin:12px 0;
+}
+
+.stepnum{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:8px;flex:0 0 26px;
+  background:linear-gradient(135deg,var(--hl),var(--hl2));
+  color:#04121f;font-weight:900;font-size:.82rem;margin-right:8px;
+}
+.step h3{display:flex;align-items:center;gap:4px;color:var(--text);margin-top:1.6em;}
+.step h3 .stepnum{margin-right:4px;}
+
+/* ============ CRÉDITOS ============ */
+.credits-hero{margin-top:4px;}
+.author-card{
+  text-align:center;padding:26px 18px;
+  background:linear-gradient(150deg,rgba(30,58,95,.6),rgba(15,23,42,.35));
+  border:1px solid var(--accent);border-radius:18px;margin:16px 0;
+}
+.author-name{
+  font-size:2rem;font-weight:900;letter-spacing:-.02em;line-height:1.15;
+  background:linear-gradient(90deg,var(--hl),var(--hl2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  margin:0 0 6px;
+}
+.author-role{font-size:.95rem;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+.metarow{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px;
+  font-size:.8rem;color:var(--muted);
+}
+.metapill{
+  background:var(--card);border:1px solid var(--border);
+  padding:6px 13px;border-radius:999px;
+}
+.metapill b{color:var(--hl);font-weight:800;}
+
+/* ============ VOLVER ARRIBA ============ */
+.to-top{
+  position:fixed;right:16px;bottom:18px;z-index:90;
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),#123055);
+  color:#dbeafe;border:1px solid var(--hl);
+  font-size:1.15rem;font-weight:900;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  box-shadow:0 6px 22px -8px var(--hl);font-family:inherit;
+}
+.to-top.show{display:flex;}
+.to-top:hover{background:var(--hl);color:#04121f;}
+
+/* ============ AVISO IFRAME ============ */
+.iframe-warn{
+  display:none;background:#78350f;color:#fde68a;border:1px solid #b45309;
+  border-radius:10px;padding:10px 12px;font-size:.82rem;margin:12px 0;
+}
+.iframe-warn.show{display:block;}
+
+/* ============ BÚSQUEDA ============ */
+mark.search-hl{background:var(--warn);color:#1a1200;border-radius:3px;padding:0 2px;}
+
+/* ============ IMPRESIÓN ============ */
+@media print{
+  @page{size:A4 portrait;margin:14mm 12mm;}
+  html,body{
+    background:#ffffff !important;color:#000000 !important;
+    padding:0 !important;margin:0 !important;font-size:11pt !important;
+  }
+  .appbar,.toolbar,.tabs,.to-top,.copyBtn,.progress-bar,.searchwrap,.iframe-warn,.no-print{
+    display:none !important;
+  }
+  main{max-width:none !important;padding:0 !important;}
+  .panel{display:block !important;page-break-after:auto !important;animation:none !important;}
+  .card,.prompt,.copyblock,.urlbox,details,.author-card,.callout,.note{
+    background:#ffffff !important;color:#000000 !important;
+    border:1px solid #999999 !important;box-shadow:none !important;
+    page-break-inside:avoid;
+  }
+  pre,code{
+    background:#f2f2f2 !important;color:#000000 !important;
+    border:1px solid #bbbbbb !important;
+    overflow:visible !important;white-space:pre-wrap !important;word-break:break-word !important;
+  }
+  table{overflow:visible !important;border-collapse:collapse !important;width:100% !important;min-width:0 !important;}
+  th,td{border:1px solid #999999 !important;padding:4pt 6pt !important;}
+  th{background:#e5e5e5 !important;color:#000000 !important;}
+  tr:nth-child(even) td{background:#fafafa !important;}
+  a{color:#0000ee !important;text-decoration:underline !important;}
+  h1,h2,h3,h4{color:#000000 !important;page-break-after:avoid;}
+  h2{border-left:4px solid #333 !important;}
+  .badge{background:#e5e5e5 !important;color:#000000 !important;border:1px solid #999 !important;}
+  .author-name,.brand,.hl-text,.grad-text{
+    -webkit-background-clip:border-box !important;background-clip:border-box !important;
+    color:#000000 !important;background:none !important;
+  }
+  .hero-svg-mount{border:1px solid #999 !important;page-break-inside:avoid;}
+  [data-svg-hero] svg,[data-svg-hero] img{
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .checklist input{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .checklist label{border:1px solid #bbb !important;}
+  .stepnum{background:#333 !important;color:#fff !important;}
+  details{page-break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar" aria-hidden="true"></div>
+
+<!-- ============ SVG FUENTE (oculto, se elimina al arrancar) ============ -->
+<svg id="svgHeroSource" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#1e3a5f"/>
+    </linearGradient>
+    <linearGradient id="gAcc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#818cf8"/>
+    </linearGradient>
+    <filter id="fGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g id="svgHero">
+    <!-- fondo -->
+    <rect x="0" y="0" width="820" height="260" rx="18" fill="url(#gBg)"/>
+    <rect x="1" y="1" width="818" height="258" rx="17" fill="none" stroke="#1e3a5f" stroke-width="2"/>
+
+    <!-- conexiones -->
+    <path d="M 320 110 C 275 105 250 80 195 65" fill="none" stroke="url(#gAcc)" stroke-width="2" opacity="0.45"/>
+    <path d="M 320 150 C 275 155 250 180 195 195" fill="none" stroke="url(#gAcc)" stroke-width="2" opacity="0.45"/>
+    <path d="M 500 110 C 545 105 570 80 625 65" fill="none" stroke="url(#gAcc)" stroke-width="2" opacity="0.45"/>
+    <path d="M 500 150 C 545 155 570 180 625 195" fill="none" stroke="url(#gAcc)" stroke-width="2" opacity="0.45"/>
+
+    <!-- pulsos viajeros -->
+    <circle r="4.5" fill="#38bdf8" filter="url(#fGlow)">
+      <animateMotion dur="2.6s" repeatCount="indefinite" path="M 320 110 C 275 105 250 80 195 65"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="4.5" fill="#818cf8" filter="url(#fGlow)">
+      <animateMotion dur="3.1s" begin="0.4s" repeatCount="indefinite" path="M 320 150 C 275 155 250 180 195 195"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="3.1s" begin="0.4s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="4.5" fill="#38bdf8" filter="url(#fGlow)">
+      <animateMotion dur="2.9s" begin="0.9s" repeatCount="indefinite" path="M 500 110 C 545 105 570 80 625 65"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.9s" begin="0.9s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="4.5" fill="#818cf8" filter="url(#fGlow)">
+      <animateMotion dur="3.3s" begin="1.3s" repeatCount="indefinite" path="M 500 150 C 545 155 570 180 625 195"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="3.3s" begin="1.3s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- halo del núcleo -->
+    <circle cx="410" cy="130" r="52" fill="#38bdf8" opacity="0.14">
+      <animate attributeName="r" values="46;58;46" dur="3.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.20;0.05;0.20" dur="3.2s" repeatCount="indefinite"/>
+    </circle>
+    <!-- anillo giratorio -->
+    <circle cx="410" cy="130" r="62" fill="none" stroke="#38bdf8" stroke-width="1.4"
+            stroke-dasharray="6 9" opacity="0.65">
+      <animateTransform attributeName="transform" type="rotate"
+                        from="0 410 130" to="360 410 130" dur="16s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- nodo central -->
+    <rect x="332" y="100" width="156" height="60" rx="14"
+          fill="#0a0e1a" stroke="url(#gAcc)" stroke-width="2.5"/>
+    <text x="410" y="127" text-anchor="middle" font-size="17" font-weight="800"
+          fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif">AGENTE IA</text>
+    <text x="410" y="146" text-anchor="middle" font-size="10.5"
+          fill="#94a3b8" font-family="system-ui,-apple-system,sans-serif">carpeta + AGENTS.md</text>
+
+    <!-- satélite: contexto -->
+    <rect x="45" y="42" width="150" height="46" rx="12" fill="#0f172a" stroke="#1e3a5f" stroke-width="2">
+      <animate attributeName="stroke" values="#1e3a5f;#38bdf8;#1e3a5f" dur="2.6s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="68" cy="65" r="5" fill="#38bdf8"/>
+    <text x="128" y="70" text-anchor="middle" font-size="14" font-weight="700"
+          fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif">contexto</text>
+
+    <!-- satélite: habilidades -->
+    <rect x="45" y="172" width="150" height="46" rx="12" fill="#0f172a" stroke="#1e3a5f" stroke-width="2">
+      <animate attributeName="stroke" values="#1e3a5f;#818cf8;#1e3a5f" dur="3.1s" begin="0.4s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="68" cy="195" r="5" fill="#818cf8"/>
+    <text x="128" y="200" text-anchor="middle" font-size="14" font-weight="700"
+          fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif">habilidades</text>
+
+    <!-- satélite: memoria -->
+    <rect x="625" y="42" width="150" height="46" rx="12" fill="#0f172a" stroke="#1e3a5f" stroke-width="2">
+      <animate attributeName="stroke" values="#1e3a5f;#38bdf8;#1e3a5f" dur="2.9s" begin="0.9s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="648" cy="65" r="5" fill="#38bdf8"/>
+    <text x="708" y="70" text-anchor="middle" font-size="14" font-weight="700"
+          fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif">memoria</text>
+
+    <!-- satélite: proyectos -->
+    <rect x="625" y="172" width="150" height="46" rx="12" fill="#0f172a" stroke="#1e3a5f" stroke-width="2">
+      <animate attributeName="stroke" values="#1e3a5f;#818cf8;#1e3a5f" dur="3.3s" begin="1.3s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="648" cy="195" r="5" fill="#818cf8"/>
+    <text x="708" y="200" text-anchor="middle" font-size="14" font-weight="700"
+          fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif">proyectos</text>
+  </g>
+</svg>
+
+<!-- ============ CABECERA ============ -->
+<header class="appbar">
+  <div class="toolbar">
+    <span class="brand">⚡ AGENTE IA · TUTORIAL</span>
+
+    <div class="searchwrap">
+      <input type="search" id="searchInput" placeholder="Buscar en el tutorial…" aria-label="Buscar en el tutorial">
+    </div>
+    <span class="searchcount" id="searchCount"></span>
+
+    <button class="btn icon" id="fontMinus" title="Reducir tamaño de texto" aria-label="Reducir tamaño de texto">A−</button>
+    <button class="btn icon" id="fontPlus" title="Aumentar tamaño de texto" aria-label="Aumentar tamaño de texto">A+</button>
+    <button class="btn icon" id="themeBtn" title="Cambiar modo claro / oscuro">🌙</button>
+    <button class="btn" id="printBtn" title="Imprimir o guardar como PDF">🖨 PDF</button>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Secciones del tutorial">
+    <button class="tab active" role="tab" data-target="p-inicio" aria-selected="true">INICIO</button>
+    <button class="tab" role="tab" data-target="p-conceptos" aria-selected="false">CONCEPTOS</button>
+    <button class="tab" role="tab" data-target="p-procedimiento" aria-selected="false">PROCEDIMIENTO</button>
+    <button class="tab" role="tab" data-target="p-practica" aria-selected="false">PRÁCTICA</button>
+    <button class="tab" role="tab" data-target="p-errores" aria-selected="false">ERRORES</button>
+    <button class="tab" role="tab" data-target="p-resumen" aria-selected="false">RESUMEN</button>
+    <button class="tab" role="tab" data-target="p-fuentes" aria-selected="false">FUENTES</button>
+    <button class="tab" role="tab" data-target="p-creditos" aria-selected="false">CRÉDITOS</button>
+  </nav>
+</header>
+
+<main>
+
+<div class="iframe-warn" id="iframeWarn">
+  ⚠️ Estás viendo este archivo dentro de un visor incrustado. Si el botón <b>🖨 PDF</b> no responde,
+  abre el archivo directamente en el navegador (doble clic sobre el archivo) y pulsa <b>Ctrl+P</b> / <b>Cmd+P</b>.
+</div>
+
+<!-- ================================================================
+     PANEL: INICIO
+================================================================= -->
+<section class="panel active" id="p-inicio" role="tabpanel" aria-label="Inicio">
+
+  <div class="hero-svg-mount" data-svg-hero="true" role="img"
+       aria-label="Diagrama animado: un agente de IA central conectado a las carpetas de contexto, habilidades, memoria y proyectos"></div>
+  <p class="hero-caption">Un agente es un núcleo (<code>AGENTS.md</code>) conectado a cuatro carpetas que le dan conocimiento, procedimientos, experiencia y trabajo real.</p>
+
+  <h1>Manual para crear tu agente de inteligencia artificial</h1>
+  <p class="lead">Tutorial interactivo, paso a paso y <strong>sin programar una sola línea de código</strong>. Basado en el manual de <strong>Rubén Sbarsky</strong>.</p>
+
+  <div class="card hl">
+    <h2 style="margin-top:0;">🎯 ¿Qué vas a aprender aquí?</h2>
+    <p>A construir un <strong>agente de IA funcional</strong> dentro de una simple carpeta de tu ordenador. Ese agente será capaz de leer tus documentos, aplicar las reglas de tu negocio, ejecutar tareas completas y <em>aprender de tus correcciones</em> para no volver a preguntarte lo mismo.</p>
+    <p>Al terminar sabrás:</p>
+    <ul>
+      <li>Qué es un agente de IA y en qué se diferencia de un chatbot normal.</li>
+      <li>Cómo montar su estructura de carpetas (<code>contexto</code>, <code>habilidades</code>, <code>memoria</code>, <code>proyectos</code>).</li>
+      <li>Cómo redactar el archivo maestro <code>AGENTS.md</code>.</li>
+      <li>Cómo entrenarlo con ejemplos reales y guardar procedimientos reutilizables (<em>skills</em>).</li>
+      <li>Cómo ponerlo a trabajar de forma autónoma con un cliente nuevo.</li>
+    </ul>
+  </div>
+
+  <h2>🤔 ¿Para qué sirve un agente de IA?</h2>
+  <p>Sirve para <strong>delegar tareas laborales completas y recurrentes</strong>. A diferencia de un chat normal —donde tienes que explicarlo todo desde cero cada vez—, un agente conserva sus instrucciones, tus documentos, tus preferencias y sus procedimientos guardados.</p>
+  <p>En palabras simples: <em>lee el encargo, busca tus reglas, ejecuta el trabajo y te entrega el resultado terminado</em>.</p>
+
+  <h2>✅ ¿Qué necesitas antes de empezar?</h2>
+  <div class="grid2">
+    <div class="card">
+      <h4>Imprescindible</h4>
+      <ul>
+        <li>Un ordenador con <strong>gestor de archivos</strong> (Explorador, Finder, etc.).</li>
+        <li>Una herramienta de IA que pueda <strong>leer carpetas</strong> (ChatGPT Work, Claude Cowork u otra similar).</li>
+        <li>Los documentos básicos de tu negocio: tarifas, catálogo, condiciones.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Muy recomendable</h4>
+      <ul>
+        <li>Una <strong>tarea repetitiva concreta</strong> para empezar (presupuestos, informes, respuestas tipo…).</li>
+        <li>Un caso real ya resuelto a mano, para usarlo como ejemplo piloto.</li>
+        <li>Ganas de <strong>corregir al agente</strong> las primeras veces: así aprende.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>🧭 Objetivos del tutorial</h2>
+  <ol>
+    <li><strong>Entender</strong> la arquitectura mental de un agente (los 5 componentes).</li>
+    <li><strong>Construir</strong> la carpeta raíz con sus cuatro subcarpetas.</li>
+    <li><strong>Entrenar</strong> el agente con un encargo real y corregirlo.</li>
+    <li><strong>Guardar</strong> los procedimientos aprendidos como habilidades reutilizables.</li>
+    <li><strong>Verificar</strong> que funciona de forma autónoma en un proyecto nuevo.</li>
+  </ol>
+
+  <h2>📖 Cómo usar este tutorial</h2>
+  <p>El tutorial está dividido en <strong>pestañas</strong>. Te recomiendo seguirlas en orden la primera vez:</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Pestaña</th><th>Qué encontrarás</th><th>Cuándo usarla</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>INICIO</b></td><td>Presentación, objetivos y checklist.</td><td>Ahora, antes de empezar.</td></tr>
+        <tr><td><b>CONCEPTOS</b></td><td>Qué es un agente y su arquitectura.</td><td>Para entender el «por qué».</td></tr>
+        <tr><td><b>PROCEDIMIENTO</b></td><td>Los 4 pasos, con prompts listos para copiar.</td><td>Mientras construyes el tuyo.</td></tr>
+        <tr><td><b>PRÁCTICA</b></td><td>Ejercicios con solución explicada.</td><td>Para comprobar que lo entendiste.</td></tr>
+        <tr><td><b>ERRORES</b></td><td>Los fallos que nunca debes cometer.</td><td>Antes de dar por cerrado el agente.</td></tr>
+        <tr><td><b>RESUMEN</b></td><td>Conceptos clave, glosario y FAQ.</td><td>Para repasar.</td></tr>
+        <tr><td><b>FUENTES</b></td><td>Enlaces originales del material.</td><td>Para ampliar.</td></tr>
+        <tr><td><b>CRÉDITOS</b></td><td>Autoría, fecha y versión del archivo.</td><td>Al final.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p>💡 <strong>Todos los prompts llevan un botón «COPIAR».</strong> Púlsalo y pégalo directamente en tu herramienta de IA. No tienes que reescribirlos a mano.</p>
+  </div>
+
+  <h2>📋 Checklist de aprendizaje</h2>
+  <p>Marca cada punto a medida que lo vayas dominando. Tu progreso se guarda en este navegador.</p>
+  <ul class="checklist" id="checklist">
+    <li><label><input type="checkbox" data-ck="c1"><span>Entiendo qué es un agente de IA y en qué se diferencia de un chatbot.</span></label></li>
+    <li><label><input type="checkbox" data-ck="c2"><span>Sé qué es <code>AGENTS.md</code> y por qué es el archivo maestro.</span></label></li>
+    <li><label><input type="checkbox" data-ck="c3"><span>Puedo distinguir las cuatro subcarpetas y qué va en cada una.</span></label></li>
+    <li><label><input type="checkbox" data-ck="c4"><span>He creado mi carpeta raíz con las cuatro subcarpetas.</span></label></li>
+    <li><label><input type="checkbox" data-ck="c5"><span>He redactado mi <code>AGENTS.md</code> con las dos reglas de oro.</span></label></li>
+    <li><label><input type="checkbox" data-ck="c6"><span>He cargado mis documentos de empresa en <code>/contexto</code>.</span></label></li>
+    <li><label><input type="checkbox" data-ck="c7"><span>He ejecutado mi primer encargo piloto.</span></label></li>
+    <li><label><input type="checkbox" data-ck="c8"><span>He corregido al agente y fijado una regla de negocio.</span></label></li>
+    <li><label><input type="checkbox" data-ck="c9"><span>He guardado al menos una habilidad (<em>skill</em>) reutilizable.</span></label></li>
+    <li><label><input type="checkbox" data-ck="c10"><span>He probado el agente con un encargo nuevo y autónomo.</span></label></li>
+  </ul>
+  <div class="checkprogress">
+    <div class="cbar"><i id="cbarFill"></i></div>
+    <span id="ckText">0 / 10</span>
+    <button class="btn no-print" id="ckReset" style="margin-left:auto;">Reiniciar</button>
+  </div>
+
+</section>
+
+<!-- ================================================================
+     PANEL: CONCEPTOS
+================================================================= -->
+<section class="panel" id="p-conceptos" role="tabpanel" aria-label="Conceptos">
+
+  <h1>Conceptos y fundamentos</h1>
+  <p class="lead">Antes de construir hay que entender <strong>qué</strong> es un agente, <strong>para qué</strong> sirve y <strong>por qué</strong> merece la pena aprender a crearlo.</p>
+
+  <h2>1. ¿Qué es un agente de inteligencia artificial?</h2>
+  <div class="card">
+    <p>Un <strong>agente de inteligencia artificial (IA)</strong> es un <em>asistente digital estructurado</em> al que puedes delegar procesos o tareas laborales completas y recurrentes.</p>
+    <p>A diferencia de una conversación común con un chatbot —donde tienes que explicarle todo desde cero cada vez que abres un chat—, un agente posee:</p>
+    <ul>
+      <li><strong>Instrucciones permanentes.</strong></li>
+      <li><strong>Acceso a los documentos de tu empresa.</strong></li>
+      <li><strong>Memoria de tus preferencias.</strong></li>
+      <li><strong>Procedimientos guardados</strong> (habilidades).</li>
+    </ul>
+    <p style="margin-bottom:0;">En términos sencillos: un agente <em>lee la información de un encargo, busca las reglas de tu negocio, ejecuta el trabajo y te entrega el resultado final terminado</em> sin que tengas que programar ni una sola línea de código.</p>
+  </div>
+
+  <h3>Chatbot vs. Agente: la diferencia en una tabla</h3>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Aspecto</th><th>Chatbot normal</th><th>Agente de IA</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Memoria entre sesiones</td><td>❌ Nada</td><td>✅ Guarda preferencias y decisiones</td></tr>
+        <tr><td>Conocimiento de tu empresa</td><td>❌ Se lo explicas cada vez</td><td>✅ Lee tus documentos</td></tr>
+        <tr><td>Procedimientos</td><td>❌ Improvisa</td><td>✅ Sigue guías guardadas (skills)</td></tr>
+        <tr><td>Resultado</td><td>Texto suelto</td><td>Entregables completos (Excel, HTML, 3D…)</td></tr>
+        <tr><td>Portabilidad</td><td>Atado a una plataforma</td><td>✅ Funciona en ChatGPT, Claude, etc.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>2. ¿Por qué es crucial aprender a crear tu propio agente hoy?</h2>
+  <div class="grid2">
+    <div class="card">
+      <h4>⏱ Ahorro masivo de tiempo</h4>
+      <p style="margin:0;font-size:.9rem;">Elimina las horas dedicadas a tareas administrativas repetitivas: redactar propuestas, responder correos estandarizados, procesar informes.</p>
+    </div>
+    <div class="card">
+      <h4>📐 Estandarización y calidad</h4>
+      <p style="margin:0;font-size:.9rem;">Garantiza que el trabajo siempre se realice bajo los mismos criterios y normas de tu empresa, independientemente de la herramienta de IA que uses.</p>
+    </div>
+    <div class="card">
+      <h4>🔁 Portabilidad total</h4>
+      <p style="margin:0;font-size:.9rem;">Al estar basado en una estructura simple de carpetas y archivos de texto plano, tu agente funciona en <strong>ChatGPT</strong>, <strong>Claude</strong> o cualquier entorno futuro sin perder su conocimiento.</p>
+    </div>
+    <div class="card">
+      <h4>🧠 Aprende contigo</h4>
+      <p style="margin:0;font-size:.9rem;">Cada corrección que le haces queda registrada. Al siguiente encargo ya no tienes que repetirla.</p>
+    </div>
+  </div>
+
+  <h2>3. Analogía cotidiana: el nuevo empleado digital</h2>
+  <div class="callout">
+    <p><strong>Imagina que contratas a una persona asistente para tu equipo. En su primer día…</strong></p>
+    <ul style="margin-bottom:0;">
+      <li>Le muestras el <strong>dossier de la empresa</strong> (tarifas, normas, catálogo) → <em>Esto es la carpeta de Contexto.</em></li>
+      <li>Le entregas un <strong>manual de acogida</strong> con las reglas generales → <em>Esto es el archivo <code>AGENTS.md</code>.</em></li>
+      <li>Le enseñas <strong>cómo realizar una tarea específica</strong> corrigiendo sus primeros borradores → <em>Esto genera una Habilidad en su carpeta de Habilidades.</em></li>
+      <li>El asistente anota tus preferencias para no repetirte preguntas → <em>Esto se guarda en su Memoria.</em></li>
+      <li>Le das una mesa donde guardar los expedientes de cada cliente → <em>Esto es la carpeta de Proyectos.</em></li>
+    </ul>
+  </div>
+
+  <h2>4. Situaciones reales donde se utiliza</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Sector</th><th>Uso típico del agente</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>Empresas de eventos y servicios</b></td><td>Elaboración automática de propuestas comerciales comparativas y previsualizaciones del espacio.</td></tr>
+        <tr><td><b>Oficinas técnicas y consultorías</b></td><td>Generación de informes recurrentes, análisis de documentación contractual y preparación de presupuestos.</td></tr>
+        <tr><td><b>Atención al cliente y ventas</b></td><td>Redacción de respuestas para correos complejos siguiendo políticas comerciales.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>5. La arquitectura del agente (estructura de carpetas)</h2>
+  <h3>La filosofía sin programación</h3>
+  <p>Para crear un agente <strong>no necesitas programar</strong>. Su «cerebro» y su espacio de trabajo consisten simplemente en una <em>carpeta organizada</em> en tu ordenador.</p>
+
+<pre class="tree">BRISA-EVENTOS/          ← Carpeta Raíz del Agente
+├── AGENTS.md           ← Manual de instrucciones del Agente
+├── contexto/           ← Información fija de tu empresa
+├── habilidades/        ← Procedimientos paso a paso creados
+├── memoria/            ← Decisiones y preferencias recordadas
+└── proyectos/          ← Expedientes y encargos de clientes</pre>
+
+  <h2>6. Los 5 componentes esenciales explicados</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Componente</th><th>Qué es</th><th>Ejemplos</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>1</b></td>
+          <td><code>AGENTS.md</code></td>
+          <td>El manual principal. Define el rol del agente, las dos reglas de oro universales y la ubicación de las herramientas.</td>
+          <td>Rol, reglas, orden de lectura de carpetas.</td>
+        </tr>
+        <tr>
+          <td><b>2</b></td>
+          <td><code>/contexto</code></td>
+          <td>Documentos permanentes de la empresa.</td>
+          <td><code>tarifas.xlsx</code>, <code>catalogo.pdf</code>, <code>condiciones.pdf</code>.</td>
+        </tr>
+        <tr>
+          <td><b>3</b></td>
+          <td><code>/habilidades</code></td>
+          <td>Guías paso a paso de tareas específicas aprendidas durante el trabajo.</td>
+          <td><code>preparar-presupuestos/SKILL.md</code>.</td>
+        </tr>
+        <tr>
+          <td><b>4</b></td>
+          <td><code>/memoria</code></td>
+          <td>Aprendizajes, reglas de negocio y criterios a recordar.</td>
+          <td>«Presentar siempre dos opciones comparativas».</td>
+        </tr>
+        <tr>
+          <td><b>5</b></td>
+          <td><code>/proyectos</code></td>
+          <td>Subcarpetas independientes para cada cliente o encargo.</td>
+          <td><code>evento-01/</code>, <code>evento-02/</code>, <code>auditoria-cliente-01/</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>7. Tabla comparativa: mente humana vs. estructura del agente</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Mente del empleado</th><th>Componente del agente</th><th>Contenido real en el agente</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>Puesto y rol</b></td><td><code>AGENTS.md</code></td><td>Instrucciones de comportamiento y orden de lectura.</td></tr>
+        <tr><td><b>Conocimiento de empresa</b></td><td><code>/contexto</code></td><td>Tarifas Excel, catálogo de mobiliario, normas.</td></tr>
+        <tr><td><b>Manual de procedimientos</b></td><td><code>/habilidades</code></td><td>Guías paso a paso (<code>SKILL.md</code>).</td></tr>
+        <tr><td><b>Experiencia acumulada</b></td><td><code>/memoria</code></td><td>Notas de preferencias del usuario registradas.</td></tr>
+        <tr><td><b>Mesa de trabajo</b></td><td><code>/proyectos</code></td><td>Encargos puntuales (<code>evento-01</code>, <code>evento-02</code>).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>8. Errores frecuentes al estructurar la arquitectura</h2>
+  <div class="note bad">
+    <b>❌ Error 1 — Mezclar documentos de clientes con los de la empresa</b>
+    Poner el encargo del cliente dentro de <code>/contexto</code> hace que el agente aplique precios o restricciones de un cliente específico a otros proyectos.
+    <br><br><b>✅ Solución:</b> Mantén <code>/contexto</code> solo para información general de la empresa y pon los encargos específicos dentro de <code>/proyectos/</code>.
+  </div>
+  <div class="note bad">
+    <b>❌ Error 2 — Crear nombres de archivos confusos</b>
+    Usar nombres sin lógica (mayúsculas, acentos, espacios, fechas sueltas) dificulta que la IA y tú encontréis las cosas.
+    <br><br><b>✅ Solución:</b> Usa nombres claros en minúsculas y sin acentos: <code>evento-01</code>, <code>preparar-presupuestos</code>.
+  </div>
+
+  <h2>9. Lista de comprobación: configuración inicial</h2>
+  <ul class="checklist">
+    <li><label><input type="checkbox" disabled><span>Carpeta principal creada con el nombre de la empresa.</span></label></li>
+    <li><label><input type="checkbox" disabled><span>Cuatro subcarpetas creadas (<code>contexto</code>, <code>habilidades</code>, <code>memoria</code>, <code>proyectos</code>).</span></label></li>
+    <li><label><input type="checkbox" disabled><span>Archivo <code>AGENTS.md</code> creado en la raíz.</span></label></li>
+    <li><label><input type="checkbox" disabled><span>Documentos de contexto cargados en <code>/contexto</code>.</span></label></li>
+    <li><label><input type="checkbox" disabled><span>Subcarpeta del primer proyecto guardada en <code>/proyectos/evento-01</code>.</span></label></li>
+  </ul>
+
+  <div class="card hl">
+    <h3 style="margin-top:0;">📌 Resumen del bloque de conceptos</h3>
+    <p style="margin-bottom:0;">Un agente de IA se construye organizando una carpeta con cuatro subcarpetas (<code>contexto</code>, <code>habilidades</code>, <code>memoria</code>, <code>proyectos</code>) y un archivo maestro llamado <code>AGENTS.md</code>. <strong>No se requiere código:</strong> todo se redacta en lenguaje natural.</p>
+  </div>
+
+</section>
+
+<!-- ================================================================
+     PANEL: PROCEDIMIENTO
+================================================================= -->
+<section class="panel" id="p-procedimiento" role="tabpanel" aria-label="Procedimiento">
+
+  <h1>Paso a paso completo para crear y entrenar tu agente</h1>
+  <p class="lead">Cuatro pasos, seis prompts, cero programación. Copia cada prompt con su botón y pégalo en tu herramienta de IA.</p>
+
+  <!-- ============ PASO 1 ============ -->
+  <div class="step">
+    <h3><span class="stepnum">1</span> Configurar la estructura física de trabajo</h3>
+    <p><strong>Objetivo:</strong> crear el «cuerpo» del agente en tu ordenador.</p>
+    <p><strong>Explicación sencilla:</strong> antes de conectar la IA, necesitas la carpeta con la que va a trabajar. Es como preparar la mesa y el archivador del nuevo empleado.</p>
+
+    <ol>
+      <li>
+        <strong>Crea la carpeta raíz</strong> en tu equipo con el nombre de tu proyecto o empresa.<br>
+        <em>Ejemplo:</em> <code>BRISA-EVENTOS</code>.
+      </li>
+      <li>
+        <strong>Crea las cuatro subcarpetas</strong> dentro de la carpeta raíz:
+        <ul>
+          <li><code>contexto/</code></li>
+          <li><code>habilidades/</code> (inicia vacía)</li>
+          <li><code>memoria/</code> (inicia vacía)</li>
+          <li><code>proyectos/</code></li>
+        </ul>
+      </li>
+      <li>
+        <strong>Redacta el archivo <code>AGENTS.md</code></strong> en la raíz. Debe incluir, como mínimo, las <em>dos reglas fundamentales</em>:
+        <ul>
+          <li><strong>Regla 1:</strong> «Si necesitas información que no tienes, pídela antes de continuar.»</li>
+          <li><strong>Regla 2:</strong> «Anota lo que vayas aprendiendo en memoria para aplicar esos criterios en los siguientes encargos.»</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Carga los datos en <code>/contexto</code></strong>: introduce archivos como <code>tarifas.xlsx</code>, <code>catalogo.pdf</code> y <code>condiciones.pdf</code>.
+      </li>
+      <li>
+        <strong>Carga el primer encargo en <code>/proyectos/evento-01</code></strong>: añade la solicitud del cliente (<code>solicitud.txt</code>), el presupuesto máximo deseado y los planos del espacio.
+      </li>
+    </ol>
+
+    <div class="note ok">
+      <b>✅ Resultado esperado</b>
+      Una carpeta con esta pinta:
+    </div>
+
+<pre class="tree">BRISA-EVENTOS/
+├── AGENTS.md
+├── contexto/
+│   ├── tarifas.xlsx
+│   ├── catalogo.pdf
+│   └── condiciones.pdf
+├── habilidades/
+├── memoria/
+└── proyectos/
+    └── evento-01/
+        ├── solicitud.txt
+        └── planos.pdf</pre>
+
+    <div class="note warn">
+      <b>⚠️ Si algo sale mal</b>
+      Si tu herramienta de IA no lee carpetas completas, usa la versión de escritorio o de trabajo (ChatGPT Work, Claude Cowork). Si no tienes ninguna, súbelo todo a una carpeta en la nube que la IA pueda leer.
+    </div>
+  </div>
+
+  <!-- ============ PASO 2 ============ -->
+  <div class="step">
+    <h3><span class="stepnum">2</span> Conexión a la herramienta de IA y primer encargo (piloto)</h3>
+    <p><strong>Objetivo:</strong> conseguir el primer borrador real del agente.</p>
+    <p><strong>Explicación sencilla:</strong> le presentas el empleado nuevo y le das su primer trabajo. Todavía no está entrenado: solo queremos ver por dónde respira.</p>
+
+    <ol>
+      <li>
+        <strong>Conecta la carpeta</strong> a tu entorno de IA favorito (como <strong>ChatGPT Work</strong> o <strong>Claude Cowork</strong>) seleccionando la carpeta completa <code>BRISA-EVENTOS</code>.
+      </li>
+      <li>
+        <strong>Ejecuta el primer encargo:</strong> pide al agente que lea <code>AGENTS.md</code> y prepare el borrador inicial.
+      </li>
+    </ol>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="badge">PROMPT 1</span>
+        <span style="font-size:.78rem;color:var(--muted);">Generación del presupuesto inicial</span>
+        <button class="copyBtn" data-copy>COPIAR</button>
+      </div>
+      <pre>"Lee AGENTS.md. Después prepara el presupuesto de proyectos/evento-01 en HTML y Excel."</pre>
+      <div class="why"><strong>Finalidad:</strong> solicitud inicial para que la IA consulte el manual principal y el encargo del primer proyecto, redactando la propuesta económica en formato web (HTML) y hoja de cálculo (Excel).</div>
+    </div>
+
+    <ol start="3">
+      <li>
+        <strong>Revisa el resultado entregado:</strong> el agente entregará un primer presupuesto basado estrictamente en las tarifas e instrucciones de la carpeta.
+      </li>
+    </ol>
+
+    <h4>Ajuste de criterios y definición de reglas de negocio</h4>
+    <p>En la primera prueba, es común que la IA entregue una <em>solución única</em> que cumple con los requisitos básicos pero no refleja el estilo de venta de tu empresa. Para corregirlo, enséñale las reglas de negocio de tu negocio.</p>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="badge">PROMPT 2</span>
+        <span style="font-size:.78rem;color:var(--muted);">Ajuste de alternativas y reglas de negocio</span>
+        <button class="copyBtn" data-copy>COPIAR</button>
+      </div>
+      <pre>"Conserva la propuesta completa y añade una alternativa por debajo de 2.000 €, manteniendo las plazas para los 40 invitados, la iluminación y los servicios de diseño, transporte y montaje. Usa las mismas tarifas y explica qué elementos retiras y cuánto se ahorra. Incluye ambas opciones en el HTML y el Excel. Para futuros presupuestos, quiero una propuesta completa y otra más económica, siempre explicando las diferencias."</pre>
+      <div class="why"><strong>Finalidad:</strong> enseñar al agente a presentar dos opciones comparativas (propuesta completa y alternativa económica con desglose de ahorro) y fijar este criterio para todos los presupuestos futuros.</div>
+    </div>
+
+    <div class="card hl">
+      <h4 style="margin-top:0;">📊 Caso práctico real de la corrección</h4>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Momento</th><th>Resultado</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Resultado inicial</b></td>
+              <td>Presupuesto único de <strong>2.440 €</strong></td>
+              <td>Una sola opción, sin alternativas.</td>
+            </tr>
+            <tr>
+              <td><b>Resultado tras la corrección</b></td>
+              <td>Dos opciones comparables</td>
+              <td>
+                <b>Opción A (Completa):</b> 2.440 €<br>
+                <b>Opción B (Económica):</b> 1.895 €<br>
+                <b>Ahorro:</b> 545 €, retirando barra de madera, centros florales y cartel de bienvenida.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <b>⚠️ Si algo sale mal</b>
+      Si el agente no aplica la nueva regla en el siguiente encargo, revisa que realmente la haya escrito en <code>/memoria</code>. Si no lo ha hecho, pídeselo explícitamente.
+    </div>
+  </div>
+
+  <!-- ============ PASO 3 ============ -->
+  <div class="step">
+    <h3><span class="stepnum">3</span> Guardar aprendizajes como habilidades reutilizables (Skills)</h3>
+    <p><strong>Objetivo:</strong> convertir lo aprendido en un procedimiento estandarizado que el agente pueda repetir solo.</p>
+
+    <h4>Diferencia crucial: Memoria vs. Habilidades (Skills)</h4>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Concepto</th><th>Qué es</th><th>Ejemplo real en la carpeta</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Memoria</b></td>
+            <td>Criterios y decisiones de negocio aprendidas tras correcciones.</td>
+            <td><em>«Presentar siempre dos opciones (completa y económica) indicando qué cambia y el ahorro.»</em></td>
+          </tr>
+          <tr>
+            <td><b>Habilidad (Skill)</b></td>
+            <td>Procedimiento operativo detallado paso a paso para realizar una tarea.</td>
+            <td>Instrucciones de qué documentos abrir, cómo estructurar el Excel/HTML y qué validaciones hacer.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>3.1 · Guarda el procedimiento de presupuestación</h4>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="badge">PROMPT 3</span>
+        <span style="font-size:.78rem;color:var(--muted);">Creación de la habilidad de presupuestación</span>
+        <button class="copyBtn" data-copy>COPIAR</button>
+      </div>
+      <pre>"Crea en habilidades una habilidad llamada preparar-presupuestos con su SKILL.md, usando el proceso y los criterios que hemos definido. Separa las reglas generales de los datos de este evento. Actualiza AGENTS.md para que la consulte al preparar nuevos presupuestos."</pre>
+      <div class="why"><strong>Finalidad:</strong> convertir el proceso en un procedimiento estandarizado (<code>SKILL.md</code>) dentro de la carpeta <code>/habilidades</code>, actualizando el manual principal <code>AGENTS.md</code>.</div>
+    </div>
+
+    <h4>3.2 · Genera y guarda el montaje visual 3D</h4>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="badge">PROMPT 4</span>
+        <span style="font-size:.78rem;color:var(--muted);">Generación de la vista interactiva en 3D</span>
+        <button class="copyBtn" data-copy>COPIAR</button>
+      </div>
+      <pre>"Crea una vista 3D interactiva del evento que pueda abrir en el navegador. Usa el plano, el catálogo y las dos propuestas del presupuesto. Quiero girar y acercarme, alternar entre patio vacío, montaje completo y económico, cambiar entre día y noche y pulsar los elementos para consultar su coste. Mantén las cantidades y los precios de cada opción y cuida el acabado visual."</pre>
+      <div class="why"><strong>Finalidad:</strong> solicitar a la IA que construya una representación tridimensional interactiva conectada a las partidas del presupuesto.</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="badge">PROMPT 5</span>
+        <span style="font-size:.78rem;color:var(--muted);">Creación de la habilidad de montajes 3D</span>
+        <button class="copyBtn" data-copy>COPIAR</button>
+      </div>
+      <pre>"Crea en habilidades una habilidad llamada crear-montajes-3d a partir de este resultado y de las mejoras que hemos aplicado. Guarda el procedimiento y los recursos reutilizables, incluyendo las cámaras, la iluminación, la comparación de propuestas y la consulta de precios. Añade comprobaciones para que el 3D coincida con el plano y el presupuesto. Actualiza AGENTS.md para que la consulte cuando corresponda."</pre>
+      <div class="why"><strong>Finalidad:</strong> estructurar el procedimiento de generación gráfica tridimensional como una segunda habilidad reutilizable con controles de validación.</div>
+    </div>
+
+    <div class="note ok">
+      <b>✅ Resultado esperado</b>
+      Tu carpeta <code>/habilidades</code> ahora contiene <code>preparar-presupuestos/SKILL.md</code> y <code>crear-montajes-3d/SKILL.md</code>. Y tu <code>AGENTS.md</code> menciona ambas para que el agente sepa cuándo usarlas.
+    </div>
+  </div>
+
+  <!-- ============ PASO 4 ============ -->
+  <div class="step">
+    <h3><span class="stepnum">4</span> Ejecución autónoma y prueba multi-herramienta</h3>
+    <p><strong>Objetivo:</strong> comprobar si tu agente funciona de forma autónoma e independiente con un encargo totalmente nuevo y, opcionalmente, desde <strong>otra plataforma de IA distinta</strong> (por ejemplo, pasar de ChatGPT a <strong>Claude Cowork</strong>).</p>
+
+    <ol>
+      <li>
+        <strong>Añade el nuevo expediente:</strong> copia la carpeta del nuevo encargo en <code>/proyectos/evento-02</code>.<br>
+        <em>Ejemplo:</em> una comunión con 64 invitados, castillo hinchable y cancha de minifútbol.
+      </li>
+      <li>
+        <strong>Abre la carpeta completa desde la nueva herramienta de IA.</strong>
+      </li>
+      <li>
+        <strong>Ejecuta la instrucción directa sin volver a dar explicaciones.</strong>
+      </li>
+    </ol>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="badge">PROMPT 6</span>
+        <span style="font-size:.78rem;color:var(--muted);">Ejecución automática con un nuevo cliente</span>
+        <button class="copyBtn" data-copy>COPIAR</button>
+      </div>
+      <pre>"Lee AGENTS.md y utiliza las habilidades del agente para preparar la propuesta de proyectos/evento-02: presupuesto en HTML y Excel y montaje 3D interactivo."</pre>
+      <div class="why"><strong>Finalidad:</strong> validar el comportamiento autónomo del agente comprobando si aplica las habilidades aprendidas previamente sin requerir re-explicaciones.</div>
+    </div>
+
+    <div class="note ok">
+      <b>✅ Prueba superada si…</b>
+      El agente entrega dos opciones comparativas (completa y económica) y un montaje 3D interactivo <strong>sin que se lo hayas vuelto a explicar</strong>.
+    </div>
+    <div class="note bad">
+      <b>❌ Prueba no superada si…</b>
+      El agente improvisa, ignora el catálogo o se inventa precios. En ese caso, revisa el <code>AGENTS.md</code>: probablemente falte el registro de la habilidad.
+    </div>
+  </div>
+
+  <!-- ============ RECOPILATORIO ============ -->
+  <h2>📦 Recopilatorio organizado de prompts</h2>
+
+  <h3>Categoría 1: Primer trabajo y ajuste de criterios (Paso 2)</h3>
+
+  <div class="copyblock">
+    <div class="prompt-head">
+      <span class="badge ok">PROMPT 1</span>
+      <span style="font-size:.78rem;color:var(--muted);">Presupuesto inicial</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>"Lee AGENTS.md. Después prepara el presupuesto de proyectos/evento-01 en HTML y Excel."</pre>
+  </div>
+
+  <div class="copyblock">
+    <div class="prompt-head">
+      <span class="badge ok">PROMPT 2</span>
+      <span style="font-size:.78rem;color:var(--muted);">Reglas de negocio y alternativas</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>"Conserva la propuesta completa y añade una alternativa por debajo de 2.000 €, manteniendo las plazas para los 40 invitados, la iluminación y los servicios de diseño, transporte y montaje. Usa las mismas tarifas y explica qué elementos retiras y cuánto se ahorra. Incluye ambas opciones en el HTML y el Excel. Para futuros presupuestos, quiero una propuesta completa y otra más económica, siempre explicando las diferencias."</pre>
+  </div>
+
+  <h3>Categoría 2: Guardado de procedimientos como habilidades (Paso 3)</h3>
+
+  <div class="copyblock">
+    <div class="prompt-head">
+      <span class="badge ok">PROMPT 3</span>
+      <span style="font-size:.78rem;color:var(--muted);">Creación de habilidad de presupuestación</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>"Crea en habilidades una habilidad llamada preparar-presupuestos con su SKILL.md, usando el proceso y los criterios que hemos definido. Separa las reglas generales de los datos de este evento. Actualiza AGENTS.md para que la consulte al preparar nuevos presupuestos."</pre>
+  </div>
+
+  <div class="copyblock">
+    <div class="prompt-head">
+      <span class="badge ok">PROMPT 4</span>
+      <span style="font-size:.78rem;color:var(--muted);">Vista 3D interactiva</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>"Crea una vista 3D interactiva del evento que pueda abrir en el navegador. Usa el plano, el catálogo y las dos propuestas del presupuesto. Quiero girar y acercarme, alternar entre patio vacío, montaje completo y económico, cambiar entre día y noche y pulsar los elementos para consultar su coste. Mantén las cantidades y los precios de cada opción y cuida el acabado visual."</pre>
+  </div>
+
+  <div class="copyblock">
+    <div class="prompt-head">
+      <span class="badge ok">PROMPT 5</span>
+      <span style="font-size:.78rem;color:var(--muted);">Creación de habilidad de montajes 3D</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>"Crea en habilidades una habilidad llamada crear-montajes-3d a partir de este resultado y de las mejoras que hemos aplicado. Guarda el procedimiento y los recursos reutilizables, incluyendo las cámaras, la iluminación, la comparación de propuestas y la consulta de precios. Añade comprobaciones para que el 3D coincida con el plano y el presupuesto. Actualiza AGENTS.md para que la consulte cuando corresponda."</pre>
+  </div>
+
+  <h3>Categoría 3: Ejecución autónoma en nuevos encargos (Paso 4)</h3>
+
+  <div class="copyblock">
+    <div class="prompt-head">
+      <span class="badge ok">PROMPT 6</span>
+      <span style="font-size:.78rem;color:var(--muted);">Ejecución automática</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>"Lee AGENTS.md y utiliza las habilidades del agente para preparar la propuesta de proyectos/evento-02: presupuesto en HTML y Excel y montaje 3D interactivo."</pre>
+  </div>
+
+</section>
+
+<!-- ================================================================
+     PANEL: PRÁCTICA
+================================================================= -->
+<section class="panel" id="p-practica" role="tabpanel" aria-label="Práctica">
+
+  <h1>Ejercicios prácticos con solución explicada</h1>
+  <p class="lead">Ponte a prueba. Lee la consigna, piensa tu respuesta y después abre la solución.</p>
+
+  <h2>Ejercicio 1 · Definición de estructura</h2>
+  <div class="card">
+    <p><strong>Consigna:</strong> Quieres crear un agente que redacte informes de auditoría. ¿Dónde colocarías la plantilla de auditoría en Word y dónde el documento entregado por el cliente a auditar?</p>
+  </div>
+  <details>
+    <summary>Ver solución explicada</summary>
+    <div class="dbody">
+      <p><strong>La plantilla estándar de auditoría</strong> va en la subcarpeta <code>/contexto</code>: es un documento fijo de tu empresa que se usará en todos los encargos.</p>
+      <p><strong>El documento del cliente a auditar</strong> va en <code>/proyectos/auditoria-cliente-01</code>: es la información del encargo específico.</p>
+      <p><strong>Regla mental:</strong> si el archivo sirve para <em>todos</em> los encargos → <code>/contexto</code>. Si sirve para <em>uno solo</em> → <code>/proyectos/nombre-del-encargo</code>.</p>
+    </div>
+  </details>
+
+  <h2>Ejercicio 2 · Creación de una habilidad</h2>
+  <div class="card">
+    <p><strong>Consigna:</strong> Tras corregir a la IA para que las auditorías siempre incluyan un resumen ejecutivo al inicio, ¿qué orden debes darle para que no tengas que repetírselo en el futuro?</p>
+  </div>
+  <details>
+    <summary>Ver solución explicada</summary>
+    <div class="dbody">
+      <p>Debes pedirle que <strong>guarde esa regla de trabajo creando una habilidad</strong>. Un prompt válido sería:</p>
+      <div class="copyblock">
+        <div class="prompt-head">
+          <span class="badge">PROMPT</span>
+          <button class="copyBtn" data-copy>COPIAR</button>
+        </div>
+        <pre>"Crea en habilidades una habilidad llamada redactar-resumen-ejecutivo con su SKILL.md, a partir de la corrección que acabo de hacer. Actualiza AGENTS.md para que la consulte siempre que prepare una auditoría."</pre>
+      </div>
+      <p>Así el procedimiento queda documentado en un archivo reutilizable y el agente sabe cuándo aplicarlo sin que se lo repitas.</p>
+    </div>
+  </details>
+
+  <h2>Ejercicio 3 · Separar memoria de habilidad</h2>
+  <div class="card">
+    <p><strong>Consigna:</strong> El agente ha aprendido dos cosas nuevas. Indica si cada una debería ir a <code>/memoria</code> o a <code>/habilidades</code>:</p>
+    <ol style="margin-bottom:0;">
+      <li>«Nunca ofrecer descuentos superiores al 15 % sin autorización.»</li>
+      <li>«Abrir primero <code>tarifas.xlsx</code>, después <code>catalogo.pdf</code>, calcular partidas, validar contra el plano y solo entonces generar el Excel.»</li>
+    </ol>
+  </div>
+  <details>
+    <summary>Ver solución explicada</summary>
+    <div class="dbody">
+      <p><strong>1 → Memoria.</strong> Es un criterio de negocio, una regla que hay que recordar y aplicar siempre. No describe <em>cómo</em> hacer una tarea, sino <em>qué</em> está permitido.</p>
+      <p><strong>2 → Habilidad.</strong> Es un procedimiento operativo paso a paso: dice qué abrir, en qué orden y qué validar. Eso es exactamente una <code>SKILL.md</code>.</p>
+      <p><strong>Regla mental:</strong> <em>Memoria = qué / por qué. Habilidad = cómo, paso a paso.</em></p>
+    </div>
+  </details>
+
+  <h2>Ejercicio 4 · Detectar el error de arquitectura</h2>
+  <div class="card">
+    <p><strong>Consigna:</strong> Un compañero ha guardado el presupuesto del cliente «Boda de Ana» dentro de <code>/contexto</code> porque «así la IA lo tiene a mano». ¿Qué problema va a provocar esto?</p>
+  </div>
+  <details>
+    <summary>Ver solución explicada</summary>
+    <div class="dbody">
+      <p>Que el agente <strong>mezclará datos de un cliente concreto con la información general de la empresa</strong>. Al preparar el presupuesto de otro cliente, podría arrastrar las condiciones, precios especiales o restricciones de «Boda de Ana» y aplicarlos indebidamente.</p>
+      <p><strong>Solución:</strong> mover la carpeta a <code>/proyectos/boda-ana/</code>. Deja <code>/contexto</code> exclusivamente para tarifas, catálogo y condiciones generales.</p>
+    </div>
+  </details>
+
+  <h2>Ejercicio 5 · El prompt correcto</h2>
+  <div class="card">
+    <p><strong>Consigna:</strong> ¿Cuál de estos dos prompts es mejor y por qué?</p>
+    <div class="copyblock">
+      <div class="prompt-head"><span class="badge bad">OPCIÓN A</span></div>
+      <pre>"Hazme un presupuesto bonito y barato para la boda de Ana, que quede bien."</pre>
+    </div>
+    <div class="copyblock">
+      <div class="prompt-head"><span class="badge ok">OPCIÓN B</span></div>
+      <pre>"Lee AGENTS.md y utiliza la habilidad preparar-presupuestos para generar la propuesta de proyectos/boda-ana en HTML y Excel, con opción completa y opción económica."</pre>
+    </div>
+  </div>
+  <details>
+    <summary>Ver solución explicada</summary>
+    <div class="dbody">
+      <p><strong>La opción B es la correcta.</strong> Motivos:</p>
+      <ul>
+        <li>Indica <strong>qué archivo leer primero</strong> (<code>AGENTS.md</code>), activando todas las reglas del agente.</li>
+        <li>Invoca una <strong>habilidad guardada</strong>, así que el procedimiento ya está estandarizado.</li>
+        <li>Señala la <strong>ruta exacta</strong> del encargo.</li>
+        <li>Define el <strong>formato de salida</strong> (HTML y Excel) y las <strong>dos opciones</strong> que fijaste como regla de negocio.</li>
+      </ul>
+      <p>La opción A obliga a la IA a improvisar: no sabe qué tarifas usar, ni dónde está la información, ni qué formato quieres.</p>
+    </div>
+  </details>
+
+</section>
+
+<!-- ================================================================
+     PANEL: ERRORES
+================================================================= -->
+<section class="panel" id="p-errores" role="tabpanel" aria-label="Errores">
+
+  <h1>Errores que NUNCA deben cometerse</h1>
+  <p class="lead">Los tres fallos más frecuentes —y más caros— al construir un agente de IA. Evítalos desde el primer día.</p>
+
+  <div class="note bad">
+    <b>❌ Error 1 — Dar instrucciones gigantescas en un solo mensaje de chat</b>
+    Provoca confusiones en la IA: mezcla contextos, olvida partes y responde de forma incoherente.
+    <br><br>
+    <b>✅ Cómo evitarlo:</b> haz que lea los archivos de contexto e instrucciones <em>preescritos</em>. El mensaje debe ser corto y apuntar a los archivos: «Lee <code>AGENTS.md</code>…».
+  </div>
+
+  <div class="note bad">
+    <b>❌ Error 2 — Mezclar datos de clientes en la carpeta de contexto general</b>
+    Hace que el agente aplique precios o restricciones de un cliente específico a otros proyectos.
+    <br><br>
+    <b>✅ Cómo evitarlo:</b> <code>/contexto</code> es solo para información general de la empresa. Todo lo específico de un cliente va en <code>/proyectos/nombre-del-encargo</code>.
+  </div>
+
+  <div class="note bad">
+    <b>❌ Error 3 — Olvidar actualizar el <code>AGENTS.md</code></b>
+    Si creas una habilidad pero no la registras en el manual principal, <strong>el agente no sabrá cuándo usarla</strong>. La habilidad existe pero queda muerta.
+    <br><br>
+    <b>✅ Cómo evitarlo:</b> cada vez que crees una habilidad, incluye en el mismo prompt la frase «…y actualiza <code>AGENTS.md</code> para que la consulte cuando corresponda».
+  </div>
+
+  <h2>Otros errores frecuentes (y su solución)</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Error</th><th>Consecuencia</th><th>Solución</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Nombres de archivo con acentos, mayúsculas o espacios</td>
+          <td>Enlaces rotos y confusión en la IA</td>
+          <td>Minúsculas, sin acentos, con guiones: <code>evento-01</code></td>
+        </tr>
+        <tr>
+          <td>Dejar <code>/memoria</code> y <code>/habilidades</code> vacías siempre</td>
+          <td>El agente nunca aprende: repites correcciones</td>
+          <td>Tras cada corrección, pídele que lo guarde</td>
+        </tr>
+        <tr>
+          <td>No probar el agente con un caso nuevo</td>
+          <td>Crees que funciona, pero solo repite el ejemplo</td>
+          <td>Usa siempre un <code>evento-02</code> de prueba</td>
+        </tr>
+        <tr>
+          <td>Depender de una sola plataforma de IA</td>
+          <td>Pierdes portabilidad y quedas atado</td>
+          <td>Prueba la misma carpeta en ChatGPT y en Claude</td>
+        </tr>
+        <tr>
+          <td>Pedir resultados sin definir el formato</td>
+          <td>Entregables inconsistentes</td>
+          <td>Indica siempre: «en HTML y Excel», «con dos opciones»…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>🧠 Regla de oro:</strong> el agente no adivina. Si algo no está escrito en un archivo, no existe para él. Escribe, guarda, registra.</p>
+  </div>
+
+</section>
+
+<!-- ================================================================
+     PANEL: RESUMEN
+================================================================= -->
+<section class="panel" id="p-resumen" role="tabpanel" aria-label="Resumen">
+
+  <h1>Resumen, glosario y preguntas frecuentes</h1>
+
+  <h2>1. Resumen de todo lo aprendido</h2>
+  <div class="card hl">
+    <p>Hemos construido un <strong>agente de IA funcional sin escribir código</strong>, basándonos en una carpeta estructurada con:</p>
+    <ul>
+      <li>manual de instrucciones (<code>AGENTS.md</code>),</li>
+      <li>contexto de la empresa,</li>
+      <li>habilidades estandarizadas (<em>skills</em>),</li>
+      <li>memoria acumulada,</li>
+      <li>y proyectos independientes.</li>
+    </ul>
+    <p style="margin-bottom:0;">El agente <strong>aprende de nuestras correcciones</strong>, guarda sus procedimientos y los ejecuta de forma <strong>autónoma en cualquier plataforma</strong>.</p>
+  </div>
+
+  <h2>2. Lista de conceptos clave</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Concepto</th><th>Definición breve</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>Agente de IA</b></td><td>Entorno estructurado con autonomía para realizar tareas complejas recurrentes.</td></tr>
+        <tr><td><b><code>AGENTS.md</code></b></td><td>Documento maestro que actúa como la constitución y guía del agente.</td></tr>
+        <tr><td><b>Contexto</b></td><td>Datos informativos fijos de la organización.</td></tr>
+        <tr><td><b>Habilidad (Skill)</b></td><td>Procedimiento estandarizado y ejecutable (<code>SKILL.md</code>).</td></tr>
+        <tr><td><b>Memoria</b></td><td>Registro de criterios y decisiones aprendidos tras interactuar.</td></tr>
+        <tr><td><b>Proyecto</b></td><td>Expediente de un encargo o cliente concreto.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>3. Recomendaciones para seguir aprendiendo</h2>
+  <ul>
+    <li>Comienza aplicando este método a <strong>una sola tarea repetitiva</strong> de tu trabajo diario (ej. redactar informes semanales, revisar contratos o preparar presupuestos).</li>
+    <li>Experimenta abriendo tu misma carpeta de agente en <strong>diferentes modelos de IA</strong> para verificar su adaptabilidad.</li>
+    <li>Revisa tu <code>/memoria</code> cada pocas semanas: es tu ventaja competitiva acumulada.</li>
+    <li>Cada vez que corrijas al agente, pregúntate: <em>«¿esto debería ser memoria o habilidad?»</em>.</li>
+  </ul>
+
+  <h2>4. Glosario de términos técnicos</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Término</th><th>Significado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>Agente de IA</b></td><td>Asistente conversacional configurado con archivos persistentes capaz de llevar a cabo tareas de principio a fin.</td></tr>
+        <tr><td><b><code>AGENTS.md</code></b></td><td>Archivo en formato Markdown ubicado en la raíz que especifica el comportamiento general del agente.</td></tr>
+        <tr><td><b>Skill (Habilidad)</b></td><td>Archivo con instrucciones detalladas que indica cómo realizar una tarea técnica o administrativa.</td></tr>
+        <tr><td><b>Contexto</b></td><td>Conjunto de documentos de referencia permanentes sobre los que opera la inteligencia artificial.</td></tr>
+        <tr><td><b>Markdown (.md)</b></td><td>Formato de texto plano simplificado para redactar documentos fácilmente legibles tanto por humanos como por inteligencias artificiales.</td></tr>
+        <tr><td><b>Carpeta raíz</b></td><td>Carpeta principal del agente, que contiene <code>AGENTS.md</code> y las cuatro subcarpetas.</td></tr>
+        <tr><td><b>Encargo / Proyecto</b></td><td>Trabajo concreto solicitado por un cliente, guardado en su propia subcarpeta dentro de <code>/proyectos</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>5. Preguntas frecuentes</h2>
+
+  <details>
+    <summary>¿Necesito saber programar para crear mi agente?</summary>
+    <div class="dbody">No. Todo se redacta en lenguaje natural dentro de archivos de texto (<code>.md</code>) y documentos normales (Excel, PDF). El agente «funciona» porque la IA lee esos archivos, no porque haya código detrás.</div>
+  </details>
+
+  <details>
+    <summary>¿Funciona en cualquier herramienta de IA?</summary>
+    <div class="dbody">Sí, siempre que la herramienta pueda leer una carpeta completa. ChatGPT Work y Claude Cowork lo permiten. La estructura es texto plano, así que es portable por diseño.</div>
+  </details>
+
+  <details>
+    <summary>¿Cuánto tarda en estar operativo?</summary>
+    <div class="dbody">Con un caso piloto sencillo, puedes tener el primer borrador funcionando en una sesión. La madurez llega con las correcciones: cada vez que le enseñas algo, mejora para siempre.</div>
+  </details>
+
+  <details>
+    <summary>¿Qué diferencia hay entre memoria y habilidad?</summary>
+    <div class="dbody"><b>Memoria</b> = criterios y decisiones de negocio («presentar siempre dos opciones»). <b>Habilidad</b> = procedimiento operativo paso a paso («abrir tarifas.xlsx, calcular, validar, generar Excel»). La memoria dice <em>qué</em>; la habilidad dice <em>cómo</em>.</div>
+  </details>
+
+  <details>
+    <summary>¿Qué pasa si el agente se equivoca?</summary>
+    <div class="dbody">Corrígelo en el momento y pídele que guarde la corrección. Si es un criterio → <code>/memoria</code>. Si es un procedimiento → una habilidad nueva en <code>/habilidades</code>. Y siempre: actualizar <code>AGENTS.md</code>.</div>
+  </details>
+
+  <details>
+    <summary>¿Puedo tener varios agentes distintos?</summary>
+    <div class="dbody">Sí. Cada agente es una carpeta raíz independiente. Puedes tener uno para presupuestos, otro para auditorías y otro para atención al cliente, cada uno con su propio <code>AGENTS.md</code> y su contexto.</div>
+  </details>
+
+  <details>
+    <summary>¿Qué pasa si pierdo la carpeta?</summary>
+    <div class="dbody">Pierdes el agente entero: no vive en la nube de la IA, vive en tu disco. Haz copias de seguridad periódicas de la carpeta raíz completa.</div>
+  </details>
+
+  <details>
+    <summary>¿Se puede usar con datos confidenciales?</summary>
+    <div class="dbody">Depende de la plataforma de IA que uses. Antes de cargar datos sensibles, revisa la política de privacidad y las condiciones de tratamiento de datos del proveedor.</div>
+  </details>
+
+</section>
+
+<!-- ================================================================
+     PANEL: FUENTES
+================================================================= -->
+<section class="panel" id="p-fuentes" role="tabpanel" aria-label="Fuentes">
+
+  <h1>Fuentes y recursos originales</h1>
+  <p class="lead">Este tutorial se ha elaborado a partir del material original de <strong>Rubén Sbarsky</strong>. Aquí tienes los enlaces directos, listos para copiar.</p>
+
+  <h2>1. Vídeo de YouTube</h2>
+  <div class="urlbox">
+    <div class="prompt-head">
+      <span class="badge">VÍDEO</span>
+      <span style="font-size:.78rem;color:var(--muted);">Crea tu primer AGENTE de IA en 4 pasos (sin programar)</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>Crea tu primer AGENTE de IA en 4 pasos (sin programar) — Canal: Migue Baena IA
+https://youtube.com/watch?v=CBncNido74o&amp;is=7R4jo-xnNbAkwTXg</pre>
+  </div>
+
+  <h2>2. Guía de recursos en Notion</h2>
+  <div class="urlbox">
+    <div class="prompt-head">
+      <span class="badge">NOTION</span>
+      <span style="font-size:.78rem;color:var(--muted);">Tu agente de IA: recursos del vídeo</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>Tu agente de IA: recursos del vídeo
+https://app.notion.com/p/Tu-agente-de-IA-recursos-del-v-deo-3ea5accb1cc980cf9a78f3da21d5da37?source=copy_link</pre>
+  </div>
+
+  <h2>3. Archivos de partida de ejemplo (Google Drive)</h2>
+  <div class="urlbox">
+    <div class="prompt-head">
+      <span class="badge">DRIVE</span>
+      <span style="font-size:.78rem;color:var(--muted);">Carpeta de archivos de inicio para la demo BRISA-EVENTOS</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>Carpeta de archivos de inicio para la demo BRISA-EVENTOS
+https://drive.google.com/drive/folders/1WbapDYZOsl0HtE43h8TIuDe7B1LyNM3r?usp=sharing</pre>
+  </div>
+
+  <h2>4. Manual base de este tutorial</h2>
+  <div class="urlbox">
+    <div class="prompt-head">
+      <span class="badge">MANUAL</span>
+      <span style="font-size:.78rem;color:var(--muted);">Manual para crear tu agente de inteligencia artificial</span>
+      <button class="copyBtn" data-copy>COPIAR</button>
+    </div>
+    <pre>Manual para crear tu agente de inteligencia artificial — by Rubén Sbarsky
+(Archivo de origen: -Manual-para-crear.txt)</pre>
+  </div>
+
+  <div class="note warn">
+    <b>Nota</b>
+    Los enlaces anteriores son externos. Este tutorial HTML funciona <strong>sin conexión</strong>: solo necesitas Internet si quieres abrirlos.
+  </div>
+
+</section>
+
+<!-- ================================================================
+     PANEL: CRÉDITOS
+================================================================= -->
+<section class="panel" id="p-creditos" role="tabpanel" aria-label="Créditos">
+
+  <h1>Créditos</h1>
+
+  <div class="hero-svg-mount credits-hero" data-svg-hero="true" role="img"
+       aria-label="Diagrama animado: un agente de IA central conectado a las carpetas de contexto, habilidades, memoria y proyectos"></div>
+  <p class="hero-caption">El mismo diagrama que abre el tutorial: el agente como núcleo conectado a las cuatro carpetas que lo alimentan.</p>
+
+  <div class="author-card">
+    <h2 class="author-name">Rubén Sbarsky</h2>
+    <p class="author-role">Autor del tutorial</p>
+
+    <div class="metarow">
+      <span class="metapill">📅 Creado el <b>19/02/2026 — 10:42:17</b></span>
+      <span class="metapill">🏷 Versión <b>V001</b></span>
+    </div>
+  </div>
+
+  <h2>Sobre este tutorial</h2>
+  <div class="card">
+    <p>Tutorial HTML interactivo de un solo archivo, generado a partir del material original <em>«Manual para crear tu agente de inteligencia artificial»</em> de Rubén Sbarsky.</p>
+    <p>Incluye HTML, CSS, JavaScript y SVG animado integrados. No usa archivos externos, CDN, librerías ni fuentes externas: funciona abriéndolo directamente en el navegador, incluso sin conexión.</p>
+  </div>
+
+  <h2>Qué encontrarás dentro</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Sección</th><th>Contenido</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>INICIO</b></td><td>Presentación, objetivos y checklist de aprendizaje.</td></tr>
+        <tr><td><b>CONCEPTOS</b></td><td>Qué es un agente, arquitectura, componentes y errores de estructura.</td></tr>
+        <tr><td><b>PROCEDIMIENTO</b></td><td>Los 4 pasos con los 6 prompts listos para copiar.</td></tr>
+        <tr><td><b>PRÁCTICA</b></td><td>5 ejercicios con solución explicada.</td></tr>
+        <tr><td><b>ERRORES</b></td><td>Los fallos que nunca deben cometerse.</td></tr>
+        <tr><td><b>RESUMEN</b></td><td>Conceptos clave, glosario y 8 preguntas frecuentes.</td></tr>
+        <tr><td><b>FUENTES</b></td><td>Los 3 enlaces originales con botón COPIAR.</td></tr>
+        <tr><td><b>CRÉDITOS</b></td><td>Esta página.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Funciones interactivas incluidas</h2>
+  <ul>
+    <li>Pestañas con navegación real.</li>
+    <li>SVG animado idéntico en INICIO y en CRÉDITOS, montado desde una única plantilla.</li>
+    <li>Buscador con resaltado y contador de coincidencias.</li>
+    <li>Botones A− / A+ para cambiar el tamaño del texto.</li>
+    <li>Modo oscuro / claro persistente.</li>
+    <li>Botón imprimir / guardar como PDF optimizado.</li>
+    <li>Botón volver arriba y barra de progreso de lectura.</li>
+    <li>Checklist de aprendizaje con progreso guardado.</li>
+    <li>Botones COPIAR para todos los prompts y URLs.</li>
+  </ul>
+
+  <div class="callout">
+    <p style="margin:0;"><strong>Licencia de uso:</strong> material didáctico basado en la obra original de Rubén Sbarsky. Cita la autoría si lo compartes.</p>
+  </div>
+
+</section>
+
+</main>
+
+<button class="to-top" id="toTop" aria-label="Volver arriba" title="Volver arriba">↑</button>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================================
+     0. UTILIDADES
+  ============================================================ */
+  var LS = {
+    get: function (k, d) {
+      try { var v = localStorage.getItem('ag_tut_' + k); return v === null ? d : v; }
+      catch (e) { return d; }
+    },
+    set: function (k, v) {
+      try { localStorage.setItem('ag_tut_' + k, v); } catch (e) {}
+    }
+  };
+
+  /* ============================================================
+     1. SVG HERO — plantilla única + montaje por innerHTML
+  ============================================================ */
+  var seq = 0;
+  var TPL = null;
+  var imgMode = false;
+
+  function template() {
+    if (TPL) return TPL;
+    var src = document.getElementById('svgHeroSource');
+    if (!src) { TPL = { defs: '', art: '' }; return TPL; }
+
+    var defsEl = src.querySelector('defs');
+    var artEl  = src.querySelector('#svgHero');
+    if (!defsEl || !artEl) { TPL = { defs: '', art: '' }; return TPL; }
+
+    var d = defsEl.cloneNode(true);
+    var g = artEl.cloneNode(true);
+    var inner = d.querySelector('#svgHero');
+    if (inner && inner.parentNode) inner.parentNode.removeChild(inner);
+    g.removeAttribute('id');
+
+    TPL = { defs: d.innerHTML, art: g.outerHTML };
+
+    if (src.parentNode) src.parentNode.removeChild(src);
+    return TPL;
+  }
+
+  function markup(uid) {
+    var t = template();
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" ' +
+            'width="100%" height="260" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+            '<defs>' + t.defs + '</defs>' + t.art + '</svg>';
+    ['gBg', 'gAcc', 'fGlow'].forEach(function (id) {
+      s = s.split('id="' + id + '"').join('id="' + id + '-' + uid + '"')
+           .split('url(#' + id + ')').join('url(#' + id + '-' + uid + ')');
+    });
+    return s;
+  }
+
+  function mountOne(m) {
+    if (!m) return;
+    m.textContent = '';
+
+    if (imgMode) {
+      var im = new Image();
+      im.alt = m.getAttribute('aria-label') || '';
+      im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markup('i' + (++seq)));
+      m.appendChild(im);
+      return;
+    }
+
+    m.innerHTML = markup('h' + (++seq));
+    var svg = m.querySelector('svg');
+    if (!svg) return;
+
+    try { svg.setCurrentTime(0); svg.unpauseAnimations(); } catch (e) {}
+
+    var t0;
+    try { t0 = svg.getCurrentTime(); } catch (e) { t0 = 0; }
+
+    setTimeout(function () {
+      if (document.hidden) return;
+      if (m.querySelector('svg') !== svg) return;
+      var h = 0;
+      try { h = svg.getBoundingClientRect().height; } catch (e) {}
+      var t1 = t0;
+      try { t1 = svg.getCurrentTime(); } catch (e) {}
+      if (h > 0 && (t1 - t0) < 0.3) {
+        imgMode = true;
+        mountOne(m);
+      }
+    }, 1600);
+  }
+
+  function mountActive() {
+    var nodes = document.querySelectorAll('.panel.active [data-svg-hero]');
+    for (var i = 0; i < nodes.length; i++) mountOne(nodes[i]);
+  }
+
+  /* Red de seguridad: cada 800 ms, si el panel visible tiene su contenedor vacío, remontar */
+  setInterval(function () {
+    if (document.hidden) return;
+    var nodes = document.querySelectorAll('.panel.active [data-svg-hero]');
+    for (var i = 0; i < nodes.length; i++) {
+      if (!nodes[i].firstElementChild) mountOne(nodes[i]);
+    }
+  }, 800);
+
+  /* ============================================================
+     2. PESTAÑAS
+  ============================================================ */
+  var panels = document.querySelectorAll('.panel');
+  var tabs = document.querySelectorAll('.tab');
+
+  function activateTab(id, pushHash) {
+    var panel = document.getElementById(id);
+    if (!panel) return;
+
+    for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+    for (var j = 0; j < tabs.length; j++) {
+      tabs[j].classList.remove('active');
+      tabs[j].setAttribute('aria-selected', 'false');
+    }
+    panel.classList.add('active');
+
+    var tab = document.querySelector('.tab[data-target="' + id + '"]');
+    if (tab) {
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      try { tab.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+    }
+
+    if (pushHash !== false) {
+      try { history.replaceState(null, '', '#' + id); } catch (e) { try { location.hash = id; } catch (e2) {} }
+    }
+
+    mountActive();
+
+    try { window.scrollTo({ top: 0, behavior: 'auto' }); }
+    catch (e) { window.scrollTo(0, 0); }
+  }
+
+  for (var t = 0; t < tabs.length; t++) {
+    tabs[t].addEventListener('click', function () {
+      activateTab(this.getAttribute('data-target'), true);
+    });
+  }
+
+  /* Pestaña inicial desde el hash */
+  (function () {
+    var h = (location.hash || '').replace('#', '');
+    if (h && document.getElementById(h) && document.getElementById(h).classList.contains('panel')) {
+      activateTab(h, false);
+    } else {
+      activateTab('p-inicio', false);
+    }
+  })();
+
+  window.addEventListener('hashchange', function () {
+    var h = (location.hash || '').replace('#', '');
+    if (h && document.getElementById(h)) activateTab(h, false);
+  });
+
+  /* ============================================================
+     3. COPIAR AL PORTAPAPELES
+  ============================================================ */
+  function fallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.left = '-1000px';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    if (ok) { done(); }
+    else { alert('No se pudo copiar automáticamente. Selecciona el texto y usa Ctrl+C / Cmd+C.'); }
+  }
+
+  function copyText(text, btn) {
+    var done = function () {
+      if (!btn) return;
+      var old = btn.getAttribute('data-old') || btn.textContent;
+      btn.setAttribute('data-old', old);
+      btn.textContent = 'COPIADO ✓';
+      btn.classList.add('copied');
+      setTimeout(function () {
+        btn.textContent = old;
+        btn.classList.remove('copied');
+      }, 1500);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text, done); });
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('[data-copy]') : null;
+    if (!btn) return;
+    var box = btn.closest('.prompt, .copyblock, .urlbox');
+    var target = box ? box.querySelector('pre') : null;
+    var text = target ? (target.innerText || target.textContent || '') : '';
+    copyText(text.trim(), btn);
+  });
+
+  /* ============================================================
+     4. TAMAÑO DE TEXTO
+  ============================================================ */
+  var fontSizes = [14, 15, 16, 17, 18, 20, 22];
+  var fontIdx = parseInt(LS.get('fontIdx', '2'), 10);
+  if (isNaN(fontIdx) || fontIdx < 0 || fontIdx >= fontSizes.length) fontIdx = 2;
+
+  function applyFont() {
+    document.documentElement.style.setProperty('--fs', fontSizes[fontIdx] + 'px');
+    LS.set('fontIdx', String(fontIdx));
+  }
+  applyFont();
+
+  document.getElementById('fontMinus').addEventListener('click', function () {
+    if (fontIdx > 0) { fontIdx--; applyFont(); }
+  });
+  document.getElementById('fontPlus').addEventListener('click', function () {
+    if (fontIdx < fontSizes.length - 1) { fontIdx++; applyFont(); }
+  });
+
+  /* ============================================================
+     5. MODO CLARO / OSCURO
+  ============================================================ */
+  var themeBtn = document.getElementById('themeBtn');
+
+  function applyTheme(light) {
+    if (light) {
+      document.body.classList.add('light');
+      themeBtn.textContent = '☀️';
+      themeBtn.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    } else {
+      document.body.classList.remove('light');
+      themeBtn.textContent = '🌙';
+      themeBtn.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  }
+
+  var isLight = LS.get('theme', 'dark') === 'light';
+  applyTheme(isLight);
+
+  themeBtn.addEventListener('click', function () {
+    isLight = !isLight;
+    applyTheme(isLight);
+    LS.set('theme', isLight ? 'light' : 'dark');
+  });
+
+  /* ============================================================
+     6. CHECKLIST + PROGRESO
+  ============================================================ */
+  var checks = document.querySelectorAll('#checklist input[type="checkbox"]');
+  var cbarFill = document.getElementById('cbarFill');
+  var ckText = document.getElementById('ckText');
+
+  function updateChecklist() {
+    var total = checks.length;
+    var done = 0;
+    for (var i = 0; i < checks.length; i++) if (checks[i].checked) done++;
+    if (cbarFill) cbarFill.style.width = (total ? (done / total) * 100 : 0) + '%';
+    if (ckText) ckText.textContent = done + ' / ' + total;
+  }
+
+  function loadChecklist() {
+    for (var i = 0; i < checks.length; i++) {
+      var id = checks[i].getAttribute('data-ck');
+      checks[i].checked = LS.get('ck_' + id, '0') === '1';
+      checks[i].addEventListener('change', function () {
+        var cid = this.getAttribute('data-ck');
+        LS.set('ck_' + cid, this.checked ? '1' : '0');
+        updateChecklist();
+      });
+    }
+    updateChecklist();
+  }
+  loadChecklist();
+
+  var ckReset = document.getElementById('ckReset');
+  if (ckReset) {
+    ckReset.addEventListener('click', function () {
+      for (var i = 0; i < checks.length; i++) {
+        checks[i].checked = false;
+        LS.set('ck_' + checks[i].getAttribute('data-ck'), '0');
+      }
+      updateChecklist();
+    });
+  }
+
+  /* ============================================================
+     7. BÚSQUEDA CON RESALTADO
+  ============================================================ */
+  var searchInput = document.getElementById('searchInput');
+  var searchCount = document.getElementById('searchCount');
+  var searchTimer = null;
+
+  function clearHighlights() {
+    var marks = document.querySelectorAll('mark.search-hl');
+    for (var i = 0; i < marks.length; i++) {
+      var m = marks[i];
+      var p = m.parentNode;
+      if (!p) continue;
+      p.replaceChild(document.createTextNode(m.textContent), m);
+      p.normalize();
+    }
+  }
+
+  function highlightIn(root, q) {
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (node) {
+        if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        var p = node.parentNode;
+        if (!p) return NodeFilter.FILTER_REJECT;
+        var tag = p.nodeName;
+        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'MARK') return NodeFilter.FILTER_REJECT;
+        if (p.closest && (p.closest('.appbar') || p.closest('[data-svg-hero]'))) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    var nodes = [];
+    var n;
+    while ((n = walker.nextNode())) nodes.push(n);
+
+    var lq = q.toLowerCase();
+    var count = 0;
+
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      var text = node.nodeValue;
+      var lower = text.toLowerCase();
+      var idx = lower.indexOf(lq);
+      if (idx === -1) continue;
+
+      var frag = document.createDocumentFragment();
+      var pos = 0;
+      while (idx !== -1) {
+        if (idx > pos) frag.appendChild(document.createTextNode(text.slice(pos, idx)));
+        var mark = document.createElement('mark');
+        mark.className = 'search-hl';
+        mark.textContent = text.slice(idx, idx + q.length);
+        frag.appendChild(mark);
+        pos = idx + q.length;
+        idx = lower.indexOf(lq, pos);
+        count++;
+      }
+      if (pos < text.length) frag.appendChild(document.createTextNode(text.slice(pos)));
+      if (node.parentNode) node.parentNode.replaceChild(frag, node);
+    }
+    return count;
+  }
+
+  function doSearch(q) {
+    clearHighlights();
+    if (!q || q.trim().length < 2) {
+      searchCount.textContent = '';
+      return;
+    }
+    q = q.trim();
+
+    var panels = document.querySelectorAll('.panel');
+    var total = 0;
+    var firstPanelId = null;
+
+    for (var i = 0; i < panels.length; i++) {
+      var c = highlightIn(panels[i], q);
+      total += c;
+      if (c > 0 && !firstPanelId) firstPanelId = panels[i].id;
+    }
+
+    searchCount.textContent = total > 0 ? (total + ' coincidencia' + (total === 1 ? '' : 's')) : 'sin resultados';
+
+    if (firstPanelId) {
+      var active = document.querySelector('.panel.active');
+      if (!active || active.id !== firstPanelId) activateTab(firstPanelId, true);
+      var first = document.querySelector('.panel.active mark.search-hl');
+      if (first && first.scrollIntoView) {
+        try { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+      }
+    }
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var v = this.value;
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(function () { doSearch(v); }, 260);
+    });
+  }
+
+  /* ============================================================
+     8. VOLVER ARRIBA + BARRA DE PROGRESO
+  ============================================================ */
+  var toTop = document.getElementById('toTop');
+  var progressBar = document.getElementById('progressBar');
+
+  function onScroll() {
+    var st = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = h > 0 ? (st / h) * 100 : 0;
+    if (progressBar) progressBar.style.width = pct + '%';
+    if (toTop) {
+      if (st > 400) toTop.classList.add('show');
+      else toTop.classList.remove('show');
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if (toTop) {
+    toTop.addEventListener('click', function () {
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      catch (e) { window.scrollTo(0, 0); }
+    });
+  }
+
+  /* ============================================================
+     9. IMPRIMIR / GUARDAR COMO PDF
+  ============================================================ */
+  function mountAllHeroes() {
+    var nodes = document.querySelectorAll('[data-svg-hero]');
+    for (var i = 0; i < nodes.length; i++) {
+      if (!nodes[i].firstElementChild) mountOne(nodes[i]);
+    }
+  }
+
+  function freezeHeroes() {
+    var svgs = document.querySelectorAll('[data-svg-hero] svg');
+    for (var i = 0; i < svgs.length; i++) {
+      try {
+        svgs[i].pauseAnimations();
+        svgs[i].setCurrentTime(1.6);
+      } catch (e) {}
+    }
+  }
+
+  function resumeHeroes() {
+    var svgs = document.querySelectorAll('[data-svg-hero] svg');
+    for (var i = 0; i < svgs.length; i++) {
+      try { svgs[i].unpauseAnimations(); } catch (e) {}
+    }
+  }
+
+  function openDetails() {
+    var ds = document.querySelectorAll('details');
+    for (var i = 0; i < ds.length; i++) {
+      if (!ds[i].open) {
+        ds[i].setAttribute('data-was-closed', '1');
+        ds[i].open = true;
+      }
+    }
+  }
+
+  function closeDetails() {
+    var ds = document.querySelectorAll('details[data-was-closed]');
+    for (var i = 0; i < ds.length; i++) {
+      ds[i].open = false;
+      ds[i].removeAttribute('data-was-closed');
+    }
+  }
+
+  function preparePrint() {
+    openDetails();
+    mountAllHeroes();
+    freezeHeroes();
+  }
+
+  function afterPrint() {
+    closeDetails();
+    resumeHeroes();
+  }
+
+  var inIframe = false;
+  try { inIframe = (window.self !== window.top); } catch (e) { inIframe = true; }
+
+  if (inIframe) {
+    var w = document.getElementById('iframeWarn');
+    if (w) w.classList.add('show');
+  }
+
+  var printBtn = document.getElementById('printBtn');
+  if (printBtn) {
+    printBtn.addEventListener('click', function () {
+      preparePrint();
+      var printed = false;
+      try {
+        window.print();
+        printed = true;
+      } catch (e) {
+        printed = false;
+      }
+      if (!printed && inIframe) {
+        alert('No se puede abrir el diálogo de impresión desde este visor.\n\nAbre el archivo directamente en el navegador (doble clic sobre el HTML) y pulsa Ctrl+P / Cmd+P.');
+      } else if (inIframe) {
+        setTimeout(function () {
+          if (!document.hasFocus()) {
+            var w2 = document.getElementById('iframeWarn');
+            if (w2) w2.classList.add('show');
+          }
+        }, 900);
+      }
+      setTimeout(afterPrint, 800);
+    });
+  }
+
+  window.addEventListener('beforeprint', preparePrint);
+  window.addEventListener('afterprint', afterPrint);
+
+  /* ============================================================
+     10. MONTAJE INICIAL DEL SVG
+  ============================================================ */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { mountActive(); });
+  } else {
+    mountActive();
+  }
+  setTimeout(mountActive, 120);
+
+})();
+</script>
+</body>
+</html>
